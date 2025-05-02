@@ -1,6 +1,7 @@
 import pygame
 from game.bird import Bird
 from game.pipe import Pipe
+import random
 
 class Game:
     def __init__(self, width, height, num_birds=50):
@@ -19,6 +20,43 @@ class Game:
         self.pipe_spawn_timer = 0
         self.pipe_spawn_delay = 90
         self.passed_pipes = set()
+        
+    def create_next_generation(self):
+        """Create next generation by keeping top 10% and breeding/mutating them"""
+        # Sort birds by fitness
+        self.birds.sort(key=lambda x: x.fitness, reverse=True)
+        
+        # Keep top 10%
+        num_elites = max(1, int(self.num_birds * 0.1))
+        elites = self.birds[:num_elites]
+        
+        # Create new generation
+        new_birds = []
+        
+        # Add elite birds
+        for elite in elites:
+            new_bird = elite.clone()
+            new_birds.append(new_bird)
+            
+        # Fill rest of population with mutated versions of elites
+        while len(new_birds) < self.num_birds:
+            # Select random elite
+            parent = random.choice(elites)
+            # Create mutated clone
+            child = parent.clone()
+            child.mutate()
+            new_birds.append(child)
+            
+        # Reset positions and states
+        for bird in new_birds:
+            bird.x = self.width // 4
+            bird.y = self.height // 2
+            bird.velocity = 0
+            bird.time_alive = 0
+            bird.pipes_passed = 0
+            bird.fitness = 0
+            
+        self.birds = new_birds
         
     def get_next_pipe(self):
         """Returns the next pipe the bird needs to pass through"""
@@ -104,13 +142,14 @@ class Game:
                 self.best_fitness = max(self.best_fitness, bird.fitness)
                 self.birds.remove(bird)
                 
-        # If all birds are dead, reset the game
+        # If all birds are dead, create next generation
         if not self.birds:
             self.game_over = True
             print(f"Generation {self.generation} complete!")
             print(f"Best fitness: {self.best_fitness}")
             print(f"Score: {self.score}")
             self.generation += 1
+            self.create_next_generation()
             self.reset_game()
             return
             
