@@ -7,8 +7,8 @@ class Game:
         self.width = width
         self.height = height
         self.num_birds = num_birds
-        self.generation = 1  # Move generation to class level
-        self.best_fitness = 0  # Move best_fitness to class level
+        self.generation = 1
+        self.best_fitness = 0
         self.reset_game()
         
     def reset_game(self):
@@ -17,15 +17,14 @@ class Game:
         self.score = 0
         self.game_over = False
         self.pipe_spawn_timer = 0
-        self.pipe_spawn_delay = 90  # Frames between pipe spawns
-        self.passed_pipes = set()  # Keep track of pipes we've passed
+        self.pipe_spawn_delay = 90
+        self.passed_pipes = set()
         
     def get_next_pipe(self):
         """Returns the next pipe the bird needs to pass through"""
         if not self.pipes:
             return None
             
-        # Find the first pipe that hasn't been passed yet
         for pipe in self.pipes:
             if pipe not in self.passed_pipes:
                 return pipe
@@ -35,10 +34,9 @@ class Game:
         """Returns the horizontal distance to the next pipe"""
         next_pipe = self.get_next_pipe()
         if next_pipe is None:
-            return self.width  # If no pipe, return screen width
+            return self.width
             
-        # Calculate distance from bird to pipe
-        distance = next_pipe.x - self.birds[0].x  # Use first bird as reference
+        distance = next_pipe.x - self.birds[0].x
         return distance
         
     def get_game_state_inputs(self, bird):
@@ -65,7 +63,6 @@ class Game:
                 return False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    # Make all birds jump when space is pressed
                     for bird in self.birds:
                         bird.jump()
         return True
@@ -74,7 +71,6 @@ class Game:
         # Update all birds
         for bird in self.birds:
             bird.update()
-            # Let each bird think about the game state
             game_state_inputs = self.get_game_state_inputs(bird)
             bird.decide(game_state_inputs)
         
@@ -93,18 +89,18 @@ class Game:
             self.pipe_spawn_timer = 0
             
         # Check collisions for all birds
-        for bird in self.birds[:]:  # Create a copy of the list to safely remove birds
+        for bird in self.birds[:]:
             # Check pipe collisions
             for pipe in self.pipes:
                 if self.check_collision(bird, pipe):
-                    bird.calculate_fitness()  # Calculate final fitness before removing
+                    bird.calculate_fitness()
                     self.best_fitness = max(self.best_fitness, bird.fitness)
                     self.birds.remove(bird)
                     break
                     
             # Check ground/ceiling collisions
             if bird.y <= 0 or bird.y >= self.height:
-                bird.calculate_fitness()  # Calculate final fitness before removing
+                bird.calculate_fitness()
                 self.best_fitness = max(self.best_fitness, bird.fitness)
                 self.birds.remove(bird)
                 
@@ -114,21 +110,18 @@ class Game:
             print(f"Generation {self.generation} complete!")
             print(f"Best fitness: {self.best_fitness}")
             print(f"Score: {self.score}")
-            self.generation += 1  # Increment generation before reset
+            self.generation += 1
             self.reset_game()
             return
             
         # Update score and track pipes passed
         for pipe in self.pipes:
-            # Only score if we haven't passed this pipe before
             if pipe not in self.passed_pipes and self.birds[0].x > pipe.x + pipe.width:
                 self.score += 1
                 self.passed_pipes.add(pipe)
-                # Increment pipes_passed for all alive birds
                 for bird in self.birds:
                     bird.pipes_passed += 1
                 
-        # Update fitness for all alive birds
         for bird in self.birds:
             bird.calculate_fitness()
                 
@@ -141,17 +134,15 @@ class Game:
         return bird_rect.colliderect(top_pipe) or bird_rect.colliderect(bottom_pipe)
         
     def draw(self, screen):
-        screen.fill((135, 206, 235))  # Sky blue background
-        
-        # Draw pipes
+        screen.fill((135, 206, 235))
+
         for pipe in self.pipes:
             pipe.draw(screen)
             
-        # Draw all birds
         for bird in self.birds:
             bird.draw(screen)
         
-        # Draw score and bird count
+        # Draw UI elements
         font = pygame.font.Font(None, 36)
         score_text = font.render(f'Score: {self.score}', True, (255, 255, 255))
         birds_text = font.render(f'Birds Alive: {len(self.birds)}', True, (255, 255, 255))
