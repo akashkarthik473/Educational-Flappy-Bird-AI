@@ -7,6 +7,8 @@ class Game:
         self.width = width
         self.height = height
         self.num_birds = num_birds
+        self.generation = 1  # Move generation to class level
+        self.best_fitness = 0  # Move best_fitness to class level
         self.reset_game()
         
     def reset_game(self):
@@ -95,29 +97,40 @@ class Game:
             # Check pipe collisions
             for pipe in self.pipes:
                 if self.check_collision(bird, pipe):
+                    bird.calculate_fitness()  # Calculate final fitness before removing
+                    self.best_fitness = max(self.best_fitness, bird.fitness)
                     self.birds.remove(bird)
                     break
                     
             # Check ground/ceiling collisions
             if bird.y <= 0 or bird.y >= self.height:
+                bird.calculate_fitness()  # Calculate final fitness before removing
+                self.best_fitness = max(self.best_fitness, bird.fitness)
                 self.birds.remove(bird)
                 
         # If all birds are dead, reset the game
         if not self.birds:
             self.game_over = True
-            print("All birds died! Score:", self.score)
+            print(f"Generation {self.generation} complete!")
+            print(f"Best fitness: {self.best_fitness}")
+            print(f"Score: {self.score}")
+            self.generation += 1  # Increment generation before reset
             self.reset_game()
             return
             
-        # Update score
+        # Update score and track pipes passed
         for pipe in self.pipes:
             # Only score if we haven't passed this pipe before
             if pipe not in self.passed_pipes and self.birds[0].x > pipe.x + pipe.width:
                 self.score += 1
                 self.passed_pipes.add(pipe)
+                # Increment pipes_passed for all alive birds
+                for bird in self.birds:
+                    bird.pipes_passed += 1
                 
-        print("score", self.score)
-        print("birds alive", len(self.birds))
+        # Update fitness for all alive birds
+        for bird in self.birds:
+            bird.calculate_fitness()
                 
     def check_collision(self, bird, pipe):
         bird_rect = pygame.Rect(bird.x - bird.size, 
@@ -142,5 +155,10 @@ class Game:
         font = pygame.font.Font(None, 36)
         score_text = font.render(f'Score: {self.score}', True, (255, 255, 255))
         birds_text = font.render(f'Birds Alive: {len(self.birds)}', True, (255, 255, 255))
+        generation_text = font.render(f'Generation: {self.generation}', True, (255, 255, 255))
+        fitness_text = font.render(f'Best Fitness: {self.best_fitness}', True, (255, 255, 255))
+        
         screen.blit(score_text, (10, 10))
         screen.blit(birds_text, (10, 50))
+        screen.blit(generation_text, (10, 90))
+        screen.blit(fitness_text, (10, 130))

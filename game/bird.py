@@ -10,6 +10,9 @@ class Bird:
         self.jump_strength = -10
         self.size = 30  # Size of the bird (will be a circle for now)
         self.brain = NeuralNet()
+        self.fitness = 0  # Track fitness score
+        self.time_alive = 0  # Track how long the bird has been alive
+        self.pipes_passed = 0  # Track number of pipes passed
     
     def decide(self, game_state_inputs):
         output = self.brain.forward(game_state_inputs)
@@ -22,6 +25,18 @@ class Bird:
     def update(self):
         self.velocity += self.gravity
         self.y += self.velocity
+        self.time_alive += 1  # Increment time alive
         
     def draw(self, screen):
-        pygame.draw.circle(screen, (255, 255, 0), (int(self.x), int(self.y)), self.size) 
+        # Draw bird with color based on fitness
+        # Higher fitness = more green, lower fitness = more red
+        fitness_color = min(255, int(self.fitness * 25))  # Scale fitness to color
+        color = (255 - fitness_color, fitness_color, 0)  # RGB color based on fitness
+        pygame.draw.circle(screen, color, (int(self.x), int(self.y)), self.size)
+        
+    def calculate_fitness(self):
+        """Calculate the bird's fitness based on time alive and pipes passed"""
+        # Base fitness on time alive and pipes passed
+        # Pipes passed is weighted more heavily as it's a better indicator of success
+        self.fitness = self.time_alive + (self.pipes_passed * 100)
+        return self.fitness 
