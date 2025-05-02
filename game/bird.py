@@ -1,6 +1,5 @@
 import pygame
 from ai.NeuralNetwork import NeuralNet
-import random
 
 class Bird:
     def __init__(self, x, y):
@@ -40,14 +39,4 @@ class Bird:
         # Base fitness on time alive and pipes passed
         # Pipes passed is weighted more heavily as it's a better indicator of success
         self.fitness = self.time_alive + (self.pipes_passed * 100)
-        return self.fitness
-        
-    def clone(self):
-        """Create a copy of this bird with the same neural network weights"""
-        new_bird = Bird(self.x, self.y)
-        new_bird.brain = self.brain.clone()
-        return new_bird
-        
-    def mutate(self, mutation_rate=0.1):
-        """Randomly mutate the bird's neural network weights"""
-        self.brain.mutate(mutation_rate) 
+        return self.fitness 
