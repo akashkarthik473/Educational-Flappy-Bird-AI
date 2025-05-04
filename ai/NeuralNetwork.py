@@ -1,7 +1,7 @@
 import numpy as np
 
 class NeuralNet:
-    def __init__(self, input_size=4, hidden_size=5, output_size=1):
+    def __init__(self, input_size=4, hidden_size=8, output_size=1):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
@@ -34,7 +34,7 @@ class NeuralNet:
         clone.w2 = np.copy(self.w2)
         return clone
 
-    def mutate(self, mutation_rate=0.1):
+    def mutate(self, mutation_rate=0.01):
         # Apply Gaussian noise to weights
         self.w1 += np.random.randn(*self.w1.shape) * mutation_rate
         self.w2 += np.random.randn(*self.w2.shape) * mutation_rate

@@ -1,8 +1,9 @@
 import pygame
 from ai.NeuralNetwork import NeuralNet
 
+
 class Bird:
-    def __init__(self, x, y):
+    def __init__(self, x, y, game = None):
         self.x = x
         self.y = y
         self.velocity = 0
@@ -13,6 +14,7 @@ class Bird:
         self.fitness = 0  # Track fitness score
         self.time_alive = 0  # Track how long the bird has been alive
         self.pipes_passed = 0  # Track number of pipes passed
+        self.game = game
     
     def decide(self, game_state_inputs):
         output = self.brain.forward(game_state_inputs)
@@ -26,7 +28,11 @@ class Bird:
         self.velocity += self.gravity
         self.y += self.velocity
         self.time_alive += 1  # Increment time alive
-        
+    def clone(self):
+        clone = Bird(self.x, self.y)
+        clone.brain = self.brain.clone()
+        return clone
+
     def draw(self, screen):
         # Draw bird with color based on fitness
         # Higher fitness = more green, lower fitness = more red
@@ -38,5 +44,19 @@ class Bird:
         """Calculate the bird's fitness based on time alive and pipes passed"""
         # Base fitness on time alive and pipes passed
         # Pipes passed is weighted more heavily as it's a better indicator of success
-        self.fitness = self.time_alive + (self.pipes_passed * 100)
+        next_pipe = self.game.get_next_pipe()
+        if next_pipe:
+            # Horizontal distance to pipe
+            dist_x = max(0, next_pipe.x - self.x)
+            pipe_gap_center = next_pipe.gap_position
+            dist_y = abs(self.y - pipe_gap_center)
+
+            self.fitness = (
+                self.time_alive + 
+                (self.pipes_passed * 100) + 
+                int(0.5 * (800 - dist_x)) - 0.2 * dist_y  # penalize vertical misalignment
+            )
+        else:
+            self.fitness = self.time_alive + (self.pipes_passed * 100)
+
         return self.fitness 

@@ -1,6 +1,7 @@
 import pygame
 from game.bird import Bird
 from game.pipe import Pipe
+import random
 
 class Game:
     def __init__(self, width, height, num_birds=50):
@@ -12,7 +13,8 @@ class Game:
         self.reset_game()
         
     def reset_game(self):
-        self.birds = [Bird(self.width // 4, self.height // 2) for _ in range(self.num_birds)]
+        self.dead_birds = []
+        self.birds = [Bird(self.width // 4, self.height // 2, self) for _ in range(self.num_birds)]
         self.pipes = []
         self.score = 0
         self.game_over = False
@@ -20,6 +22,31 @@ class Game:
         self.pipe_spawn_delay = 90
         self.passed_pipes = set()
         
+
+
+
+    def evolve(self):
+        if not self.dead_birds:
+            print("No birds to evolve")
+            return
+        sorted_birds = sorted(self.dead_birds, key=lambda b: b.fitness, reverse=True)
+        num_parents = 10
+        top_birds = sorted_birds[:num_parents]
+
+        new_generation = [b.clone() for b in top_birds[:10]] 
+
+        while len(new_generation) < len(self.birds):
+            parent = random.choice(top_birds)
+            child = parent.clone()
+            child.brain.mutate()  # You can tweak the mutation rate
+            new_generation.append(child)
+            
+        self.birds = new_generation
+        self.dead_birds = []
+
+
+
+
     def get_next_pipe(self):
         """Returns the next pipe the bird needs to pass through"""
         if not self.pipes:
@@ -77,8 +104,8 @@ class Game:
         # Update pipes
         for pipe in self.pipes:
             pipe.update()
-            
-        # Remove off-screen pipes
+        
+
         self.pipes = [pipe for pipe in self.pipes if pipe.x > -pipe.width]
         
         # Spawn new pipes
@@ -89,30 +116,43 @@ class Game:
             self.pipe_spawn_timer = 0
             
         # Check collisions for all birds
+        birds_to_remove = []
         for bird in self.birds[:]:
-            # Check pipe collisions
+            # Check collision with pipes
             for pipe in self.pipes:
                 if self.check_collision(bird, pipe):
                     bird.calculate_fitness()
                     self.best_fitness = max(self.best_fitness, bird.fitness)
-                    self.birds.remove(bird)
-                    break
-                    
-            # Check ground/ceiling collisions
-            if bird.y <= 0 or bird.y >= self.height:
+                    self.dead_birds.append(bird)
+                    birds_to_remove.append(bird)
+                    break  # Stop checking more pipes
+
+            # Check collision with top/bottom (after pipe check!)
+            if bird not in birds_to_remove and (bird.y <= 0 or bird.y >= self.height):
                 bird.calculate_fitness()
                 self.best_fitness = max(self.best_fitness, bird.fitness)
-                self.birds.remove(bird)
+                self.dead_birds.append(bird)
+                birds_to_remove.append(bird)
+
+        # Remove birds
+        for bird in birds_to_remove:
+            if bird in self.birds:
+                self.birds.remove(bird)          
+
                 
         # If all birds are dead, reset the game
+        for bird in self.birds:
+            if not hasattr(bird, "fitness") or bird.fitness == 0:
+                bird.calculate_fitness()
         if not self.birds:
-            self.game_over = True
             print(f"Generation {self.generation} complete!")
             print(f"Best fitness: {self.best_fitness}")
             print(f"Score: {self.score}")
             self.generation += 1
+            self.evolve()
             self.reset_game()
             return
+
             
         # Update score and track pipes passed
         for pipe in self.pipes:
