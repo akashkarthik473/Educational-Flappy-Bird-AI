@@ -2,6 +2,7 @@ import pygame
 from game.bird import Bird
 from game.pipe import Pipe
 import random
+import numpy as np
 
 class Game:
     def __init__(self, width, height, num_birds=50):
@@ -21,6 +22,8 @@ class Game:
         self.pipe_spawn_timer = 0
         self.pipe_spawn_delay = 90
         self.passed_pipes = set()
+
+        self.pipes.append(Pipe(self.width, self.height))
         
 
 
@@ -33,16 +36,35 @@ class Game:
         num_parents = 10
         top_birds = sorted_birds[:num_parents]
 
-        new_generation = [b.clone() for b in top_birds[:10]] 
+        new_generation = []
+        # 1. Elitism: carry over the best bird unchanged
+        elite = top_birds[0].clone()
+        new_generation.append(elite)
 
-        while len(new_generation) < len(self.birds):
-            parent = random.choice(top_birds)
-            child = parent.clone()
-            child.brain.mutate()  # You can tweak the mutation rate
+        # 2. Fill the rest with crossover + mutation
+        while len(new_generation) < self.num_birds - 1:
+            parent1, parent2 = random.sample(top_birds, 2)
+            child = self.crossover(parent1, parent2)
+            child.brain.mutate(mutation_rate=0.05)  # Slightly higher mutation
             new_generation.append(child)
-            
+
+        # 3. Add one random bird for diversity
+        random_bird = Bird(self.width // 4, self.height // 2, self)
+        new_generation.append(random_bird)
+
         self.birds = new_generation
         self.dead_birds = []
+
+    def crossover(self, parent1, parent2):
+        """Create a child by combining weights from two parents."""
+        child = parent1.clone()
+        # Crossover for w1
+        mask = np.random.rand(*child.brain.w1.shape) > 0.5
+        child.brain.w1[mask] = parent2.brain.w1[mask]
+        # Crossover for w2
+        mask = np.random.rand(*child.brain.w2.shape) > 0.5
+        child.brain.w2[mask] = parent2.brain.w2[mask]
+        return child
 
 
 

@@ -1,10 +1,12 @@
-ai/__pycache__/NeuralNetwork.cpython-313.pyc
-game/__pycache__/__init__.cpython-313.pyc
-game/__pycache__/bird.cpython-313.pyc
-game/__pycache__/game.cpython-313.pyc
-game/__pycache__/pipe.cpython-313.pyc
-ai/__pycache__/NeuralNetwork.cpython-313.pyc
-game/__pycache__/__init__.cpython-313.pyc
-game/__pycache__/bird.cpython-313.pyc
-game/__pycache__/game.cpython-313.pyc
-game/__pycache__/pipe.cpython-313.pyc
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp

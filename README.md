@@ -1,72 +1,69 @@
-# Flappy Bird AI
+# Flappy Bird AI (Neuroevolution)
 
-A Flappy Bird implementation with AI learning capabilities using Pygame and Neural Networks. The game features multiple birds learning simultaneously through their own neural networks.
+A modern, professional implementation of Flappy Bird with AI agents that learn to play using simple neural networks and evolutionary strategies. Built with Python and Pygame, this project demonstrates neuroevolution and real-time visualization of agent learning.
 
 ## Features
 
-- Multiple birds (50) learning simultaneously
-- Neural Network-based decision making
-- Real-time visualization of learning process
-- Score tracking and bird survival count
-- Automatic game reset when all birds die
+- **Multiple AI agents**: 50 birds learn simultaneously, each with its own neural network.
+- **Neuroevolution**: Birds evolve over generations using mutation and selection.
+- **Real-time visualization**: Watch the learning process as it happens.
+- **Performance metrics**: Tracks score, best fitness, generation, and birds alive.
+- **Automatic reset**: Game resets and evolves when all birds die.
 
 ## Neural Network Architecture
 
-Each bird has its own neural network with:
-- 4 inputs:
-  - Distance to next pipe
-  - Bird's Y position
-  - Bird's velocity
-  - Pipe gap position
-- 5 hidden neurons
-- 1 output (jump or not jump)
+- **Inputs (4):**
+  - Horizontal distance to next pipe
+  - Bird's vertical position (Y)
+  - Bird's vertical velocity
+  - Vertical position of the next pipe gap
+- **Hidden layer:** 8 neurons, sigmoid activation
+- **Output:** 1 value (if > 0.5, bird jumps)
+
+## Project Structure
+
+```
+.
+├── main.py               # Entry point, runs the game loop
+├── requirements.txt      # Python dependencies
+├── ai/
+│   └── NeuralNetwork.py  # Neural network class for birds
+├── game/
+│   ├── __init__.py       # Game package init
+│   ├── bird.py           # Bird agent logic and fitness
+│   ├── game.py           # Main game logic, evolution, rendering
+│   └── pipe.py           # Pipe obstacle logic
+└── LICENSE               # MIT License
+```
 
 ## Setup
 
-1. Make sure you have Python 3.8+ installed
-2. Install the required dependencies:
-   ```
+1. **Python 3.8+ required**
+2. Install dependencies:
+   ```bash
    pip install -r requirements.txt
    ```
 
 ## Running the Game
 
-To run the game:
-```
+```bash
 python main.py
 ```
 
-Controls:
-- SPACE: Make all birds jump (useful for testing)
-- Close window to exit
-
-## Project Structure
-
-- `main.py`: Main game file
-- `game/`: Game-related modules
-  - `bird.py`: Bird class with neural network implementation
-  - `pipe.py`: Pipe obstacles implementation
-  - `game.py`: Main game logic
-- `ai/`: AI-related modules
-  - `NeuralNetwork.py`: Neural network implementation
+- Press **SPACE** to make all birds jump (for testing)
+- Close the window to exit
 
 ## How It Works
 
-1. Each bird has its own neural network that makes decisions based on:
-   - Distance to the next pipe
-   - Current position and velocity
-   - Position of the pipe gap
+1. Each bird observes the environment and makes decisions using its neural network.
+2. Birds that survive longer and pass more pipes are considered more 'fit'.
+3. When all birds die, the top performers are cloned and mutated to form the next generation.
+4. The process repeats, and birds improve over generations.
 
-2. The neural network processes these inputs and decides whether to jump
+## Contributing
 
-3. Birds that survive longer have better neural network weights
+Contributions are welcome! Please open issues or pull requests for improvements or bug fixes.
 
-4. The game automatically resets when all birds die, creating a new generation
+## License
 
-## Future Improvements
-
-- Implement genetic algorithm for evolving successful birds
-- Add visual distinction between birds
-- Track and display performance metrics
-- Save and load successful neural networks
-- Add more sophisticated learning algorithms 
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details. 
